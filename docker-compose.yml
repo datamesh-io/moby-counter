@@ -8,4 +8,4 @@ redis:
   image: redis
   volume_driver: dm
   volumes:
-   - "moby_counter:/data"
+   - "moby_counter_demo:/data"
