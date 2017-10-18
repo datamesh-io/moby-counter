@@ -1,8 +1,11 @@
 web:
   build: .
   ports:
-     - "80:80"
+    - "8100:80"
   links:
     - "redis:redis"
 redis:
   image: redis
+  volume_driver: dm
+  volumes:
+   - "moby_counter:/data"
