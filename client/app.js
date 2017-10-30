@@ -5,12 +5,10 @@
   var connectionStatus = false
   var dataLoaded = false
   var whaleCount = 0
+  var currentData = []
 
   function activate_page(){
-    if(!dataLoaded){
-      dataLoaded = true
-      load_data(build_page)
-    }
+    load_data(build_page)
     $('#preloader').hide()
   }
 
@@ -75,11 +73,19 @@
     $('#clickmessage').hide()
   }
 
+  function reset() {
+    whaleCount = 0
+    $('#holder').html('')
+  }
+
   // will put the mobies on the screen as per state
-  function build_page(data){
-    data.forEach(function(pos){
+  function build_page(backendData){
+    if(JSON.stringify(backendData) == JSON.stringify(currentData)) return
+    reset()
+    backendData.forEach(function(pos){
       add_whale(pos.x, pos.y)
     })
+    currentData = backendData
   }
 
   function handle_click(e){
