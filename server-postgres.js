@@ -8,8 +8,9 @@ module.exports = function(opts){
   console.log('using postgres server')
   var port = opts.postgres_port || process.env.USE_POSTGRES_PORT || 5432
   var host = opts.postgres_host || process.env.USE_POSTGRES_HOST || 'postgres'
-  var user = opts.postgres_user || process.env.POSTGRES_USER || 'flocker'
-  var password = opts.postgres_password || process.env.POSTGRES_PASSWORD || 'flocker'
+  var user = opts.postgres_user || process.env.POSTGRES_USER || 'postgres'
+  var password = opts.postgres_password || process.env.POSTGRES_PASSWORD || 'postgres'
+  var database = opts.postgres_database || process.env.POSTGRES_DATABASE || 'moby'
 
   var connectionStatus = false
   var now = new Date().getTime();
@@ -19,7 +20,7 @@ module.exports = function(opts){
     while(new Date().getTime() < now + 10000){ /* do nothing */ }   
   }
   
-  var conString = 'postgres://' + user + ':' + password + '@' + host + '/postgres' ;
+  var conString = 'postgres://' + user + ':' + password + '@' + host + '/' + database ;
   console.log(conString)
 
   var connectionAttempts = 0

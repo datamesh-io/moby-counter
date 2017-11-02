@@ -3,9 +3,13 @@ web:
   ports:
     - "8100:80"
   links:
-    - "redis:redis"
-redis:
-  image: redis
-  volume_driver: dm
-  volumes:
-   - "moby_counter:/data"
+    - "postgres:postgres"
+postgres:
+  image: postgres
+  #volume_driver: dm
+  #volumes:
+  # - "moby_counter:/var/lib/postgresql/data"
+  environment:
+    - POSTGRES_USER=postgres
+    - POSTGRES_PASSWORD=postgres
+    - POSTGRES_DB=moby

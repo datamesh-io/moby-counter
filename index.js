@@ -11,27 +11,15 @@ var args = require('minimist')(process.argv, {
   boolean:['verbose']
 })
 
-var RedisServer = require('./server')
 var PostgresServer = require('./server-postgres')
-
-// if any of these are set - then we use the postgres server
-var postresEnvVars = [
-  'USE_POSTGRES_PORT',
-  'USE_POSTGRES_HOST',
-  'POSTGRES_USER',
-  'POSTGRES_PASSWORD'
-]
-
-var useServer = RedisServer
-
-postresEnvVars.forEach(function(varName){
-  if(process.env[varName]){
-    useServer = PostgresServer
-  }
-})
-
-var server = http.createServer(useServer(args))
+var server = http.createServer(PostgresServer(args))
 
 server.listen(args.port, function(){
   console.log('server listening on port: ' + args.port)
+})
+
+process.on('SIGTERM', function () {
+  server.close(function () {
+    process.exit(0)
+  })
 })
