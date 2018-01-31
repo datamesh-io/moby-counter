@@ -6,7 +6,6 @@ html,body{
 }
 
 .whale{
-  background-color:#ffffff;
   position:absolute;
   background-image: url(moby.png);
   background-repeat: no-repeat;
@@ -14,7 +13,6 @@ html,body{
 }
 
 .bug{
-  background-color:#ffffff;
   position:absolute;
   background-image: url(bug.jpg);
   background-repeat: no-repeat;
