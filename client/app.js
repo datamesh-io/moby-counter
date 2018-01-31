@@ -1,7 +1,7 @@
 (function(){
 
   var width = 110
-  var height = 100
+  var height = 86
   var connectionStatus = false
   var dataLoaded = false
   var whaleCount = 0
