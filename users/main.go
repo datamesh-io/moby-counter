@@ -2,8 +2,11 @@ package main
 
 import (
 	"database/sql"
+	"encoding/json"
 	"fmt"
+	"io"
 	"log"
+	"net/http"
 	"os"
 
 	"github.com/gorilla/mux"
@@ -11,7 +14,7 @@ import (
 )
 
 type User struct {
-	Id   string
+	Id   int
 	Name string
 }
 
@@ -24,6 +27,7 @@ type User struct {
    DB_PASSWORD: your-password
    DB_NAME: moby_counter
 */
+
 func connect() (*sql.DB, error) {
 	psqlInfo := fmt.Sprintf(
 		"host=%s port=%d user=%s password=%s dbname=%s sslmode=disable",
@@ -35,21 +39,8 @@ func connect() (*sql.DB, error) {
 
 func LoginUser(w http.ResponseWriter, r *http.Request) {
 	// login method just returns an id for a user for now
+	// it creates a new one for the user if there isn't one.
 	// TODO add authentication
-	params := mux.Vars(r)
-	var id int
-	err := db.QueryRow(
-		`SELECT id FROM users WHERE username=$1`,
-		params["name"],
-	).Scan(&id)
-	if err != nil {
-		panic(err)
-	}
-	json.NewEncoder(w).Encode(&User{Id: id, Name: params["name"]})
-}
-
-func CreateUser(w http.ResponseWriter, r *http.Request) {
-	params := mux.Vars(r)
 	var u User
 	// POST {"Name": "fishbadger"}
 	//
@@ -58,19 +49,33 @@ func CreateUser(w http.ResponseWriter, r *http.Request) {
 	if err != nil {
 		panic(err)
 	}
-	id := 0
+
+	db, err := connect()
+	if err != nil {
+		panic(err)
+	}
+	var id int
 	err = db.QueryRow(
-		`INSERT INTO users (name) VALUES ($1) RETURNING id`,
-		params["name"],
+		`SELECT id FROM users WHERE username=$1`,
+		u.Name,
 	).Scan(&id)
+
+	if id == 0 {
+		// there was no such user, create one!
+		err = db.QueryRow(
+			`INSERT INTO users (name) VALUES ($1) RETURNING id`,
+			u.Name,
+		).Scan(&id)
+		if err != nil {
+			panic(err)
+		}
+		u.Id = id
+	}
+
 	if err != nil {
 		panic(err)
 	}
-	u.Id = id
-	err = json.NewEncoder(w).Encode(u)
-	if err != nil {
-		panic(err)
-	}
+	json.NewEncoder(w).Encode(&User{Id: id, Name: u.Name})
 }
 
 const DEFAULT_IMAGE = "default.png"
@@ -82,9 +87,14 @@ func GetImageForUser(w http.ResponseWriter, r *http.Request) {
 	params := mux.Vars(r)
 	userId := params["id"]
 
+	db, err := connect()
+	if err != nil {
+		panic(err)
+	}
+
 	// lookup username based on id to fetch image
 	var username string
-	err := db.QueryRow(
+	err = db.QueryRow(
 		`SELECT username FROM users WHERE id=$1`, userId,
 	).Scan(&username)
 	if err != nil {
@@ -100,7 +110,7 @@ func GetImageForUser(w http.ResponseWriter, r *http.Request) {
 		panic(err)
 	}
 
-	_, err = ioutil.Copy(w, f)
+	_, err = io.Copy(w, f)
 	if err != nil {
 		panic(err)
 	}
@@ -110,9 +120,14 @@ func SetImageForUser(w http.ResponseWriter, r *http.Request) {
 	params := mux.Vars(r)
 	userId := params["id"]
 
+	db, err := connect()
+	if err != nil {
+		panic(err)
+	}
+
 	// lookup username based on id to fetch image
 	var username string
-	err := db.QueryRow(
+	err = db.QueryRow(
 		`SELECT username FROM users WHERE id=$1`, userId,
 	).Scan(&username)
 	if err != nil {
@@ -140,6 +155,7 @@ func SetImageForUser(w http.ResponseWriter, r *http.Request) {
 	}
 	defer f.Close()
 	io.Copy(f, file)
+	// TODO redirect user back to referrer?user=id
 }
 
 func getImageFilename(username string) string {
@@ -166,7 +182,7 @@ func main() {
 	defer db.Close()
 
 	// TODO use a schema migrations library.
-	err = db.Exec(`CREATE TABLE IF NOT EXISTS users (
+	_, err = db.Exec(`CREATE TABLE IF NOT EXISTS users (
 	  id SERIAL PRIMARY KEY,
 	  username TEXT UNIQUE NOT NULL
 	);`)
@@ -182,11 +198,8 @@ func main() {
 
 	router := mux.NewRouter()
 
-	// Login
-	router.HandleFunc("/login/{name}", LoginUser).Methods("POST")
-
-	// Users
-	router.HandleFunc("/users", CreateUser).Methods("POST")
+	// Login (or register)
+	router.HandleFunc("/login", LoginUser).Methods("POST")
 
 	// Images
 	router.HandleFunc("/users/{id}/image", GetImageForUser).Methods("GET")
