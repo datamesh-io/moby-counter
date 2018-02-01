@@ -1,11 +1,11 @@
 version: '3'
 
 volumes:
-  moby_counter.clicks-db:
+  app.clicks-db:
     driver: dm
-  moby_counter.users-db:
+  app.users-db:
     driver: dm
-  moby_counter.uploads:
+  app.uploads:
     driver: dm
 
 services:
@@ -21,7 +21,7 @@ services:
   redis:
     image: redis
     volumes:
-     - "moby_counter.clicks-db:/data"
+     - "app.clicks-db:/data"
 
   users:
     build: users/
@@ -30,7 +30,7 @@ services:
     # TODO: uploads should be stored in a separate uploads service, not bundled
     # together in the users service. divide up the monolith!
     volumes:
-     - "moby_counter.uploads:/uploads"
+     - "app.uploads:/uploads"
     depends_on:
       - users-db
     environment:
@@ -44,7 +44,7 @@ services:
   users-db:
     image: postgres:9.6.6
     volumes:
-     - "moby_counter.users-db:/var/lib/postgresql/data"
+     - "app.users-db:/var/lib/postgresql/data"
     environment:
      - POSTGRES_USER=postgres
      - POSTGRES_DB=postgres

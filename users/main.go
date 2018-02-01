@@ -103,6 +103,11 @@ func GetImageForUser(w http.ResponseWriter, r *http.Request) {
 	}
 
 	filename := getImageFilename(username)
+	if _, err := os.Stat(
+		os.Getenv("IMAGE_STORE") + "/" + filename,
+	); os.IsNotExist(err) {
+		filename = DEFAULT_IMAGE
+	}
 	// TODO support more image types
 	w.Header().Set("Content-Type", "image/png")
 
@@ -146,7 +151,7 @@ func SetImageForUser(w http.ResponseWriter, r *http.Request) {
 
 	// TODO sanitise input before using it to write files in the filesystem
 	f, err := os.OpenFile(
-		os.Getenv("IMAGE_STORE")+"/"+username+".png",
+		os.Getenv("IMAGE_STORE")+"/"+getImageFilename(username),
 		os.O_WRONLY|os.O_CREATE,
 		0666,
 	)
@@ -164,13 +169,7 @@ func getImageFilename(username string) string {
 		// not logged in
 		return DEFAULT_IMAGE
 	} else {
-		candidateFilename := fmt.Sprintf("%s.png", username)
-		if _, err := os.Stat(
-			os.Getenv("IMAGE_STORE") + "/" + candidateFilename,
-		); os.IsNotExist(err) {
-			return DEFAULT_IMAGE
-		}
-		return candidateFilename
+		return fmt.Sprintf("%s.png", username)
 	}
 }
 
