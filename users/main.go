@@ -8,6 +8,7 @@ import (
 	"log"
 	"net/http"
 	"os"
+	"os/exec"
 
 	"github.com/gorilla/mux"
 	_ "github.com/lib/pq"
@@ -34,7 +35,6 @@ func connect() (*sql.DB, error) {
 		os.Getenv("DB_HOST"), os.Getenv("DB_PORT"), os.Getenv("DB_USER"),
 		os.Getenv("DB_PASSWORD"), os.Getenv("DB_NAME"),
 	)
-	log.Printf("using info = %s", psqlInfo)
 	return sql.Open("postgres", psqlInfo)
 }
 
@@ -146,7 +146,7 @@ func SetImageForUser(w http.ResponseWriter, r *http.Request) {
 
 	// TODO sanitise input before using it to write files in the filesystem
 	f, err := os.OpenFile(
-		os.Getenv("IMAGE_STORE")+"/"+username,
+		os.Getenv("IMAGE_STORE")+"/"+username+".png",
 		os.O_WRONLY|os.O_CREATE,
 		0666,
 	)
@@ -192,9 +192,9 @@ func main() {
 	}
 	log.Println("Initialized users table if it didn't exist.")
 
-	// FIXME: copy the default image over
-	if _, err := os.Stat("/path/to/whatever"); os.IsNotExist(err) {
-		// path/to/whatever does not exist
+	// copy the default image into the image store
+	if _, err := os.Stat(os.Getenv("IMAGE_STORE") + "/" + DEFAULT_IMAGE); os.IsNotExist(err) {
+		exec.Command("cp", "/go/src/app/"+DEFAULT_IMAGE, os.Getenv("IMAGE_STORE")+"/"+DEFAULT_IMAGE).Run()
 	}
 
 	router := mux.NewRouter()
@@ -209,8 +209,7 @@ func main() {
 	// TODO implement
 	//router.HandleFunc("/users/{id}", GetUser).Methods("GET")
 	//router.HandleFunc("/users", GetUsers).Methods("GET")
-	//router.HandleFunc("/people/{id}", DeletePerson).Methods("DELETE")
+	//router.HandleFunc("/users/{id}", DeleteUser).Methods("DELETE")
 
 	log.Fatal(http.ListenAndServe(":8000", router))
-
 }

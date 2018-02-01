@@ -1,4 +1,3 @@
-
 var getUrlParameter = function getUrlParameter(sParam) {
     var sPageURL = decodeURIComponent(window.location.search.substring(1)),
         sURLVariables = sPageURL.split('&'),
@@ -140,7 +139,7 @@ function handle_login(e) {
   var username = $('#login_username').val()
 
   function onSuccess(data) {
-    USER_ID = data
+    USER_ID = data.Id
 
     $('#auth').hide()
     $('#imageupload').show()
@@ -176,4 +175,8 @@ $(function(){
     $('#uploadForm').attr('action', 'http://127.0.0.1:8101/users/' + USER_ID + '/image')
   }
   check_status()
+  if (USER_ID !== null) {
+    setImageSrc(USERS_SERVICE + '/users/' + USER_ID + '/image')
+    updateAllImages()
+  }
 })
