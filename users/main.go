@@ -161,7 +161,7 @@ func SetImageForUser(w http.ResponseWriter, r *http.Request) {
 	defer f.Close()
 	io.Copy(f, file)
 
-	http.Redirect(w, r, fmt.Sprintf("http://127.0.0.1:8100/?user=%d", userId), 301)
+	http.Redirect(w, r, fmt.Sprintf("http://127.0.0.1:8100/?user=%s", userId), 301)
 }
 
 func getImageFilename(username string) string {
