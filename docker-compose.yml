@@ -1,11 +1,32 @@
-web:
-  build: .
-  ports:
-    - "8100:80"
-  links:
-    - "redis:redis"
-redis:
-  image: redis
-  volume_driver: dm
-  volumes:
-   - "moby_counter:/data"
+version: '3'
+volumes:
+  moby_counter.clicks-db:
+    driver: dm
+  moby_counter.users-db:
+    driver: dm
+  moby_counter.uploads:
+    driver: dm
+
+services:
+  web:
+    build: .
+    ports:
+      - "8100:80"
+    links:
+      - "redis:redis"
+  redis:
+    image: redis
+    volumes:
+     - "moby_counter.locations:/data"
+  users:
+    build: users/
+    # TODO: uploads should be stored in a separate uploads service, not bundled
+    # together in the users service. divide up the monolith!
+    volumes:
+     - "moby_counter.uploads:/uploads"
+    environment:
+     - IMAGE_STORE=
+  users-db:
+    image: 
+    volumes:
+     - "moby_counter.users-db:/var"
