@@ -25,15 +25,16 @@ type User struct {
    DB_PORT: 5432
    DB_USER: postgres
    DB_PASSWORD: your-password
-   DB_NAME: moby_counter
+   DB_NAME: mobycounter
 */
 
 func connect() (*sql.DB, error) {
 	psqlInfo := fmt.Sprintf(
-		"host=%s port=%d user=%s password=%s dbname=%s sslmode=disable",
+		"host=%s port=%s user=%s password=%s dbname=%s sslmode=disable",
 		os.Getenv("DB_HOST"), os.Getenv("DB_PORT"), os.Getenv("DB_USER"),
 		os.Getenv("DB_PASSWORD"), os.Getenv("DB_NAME"),
 	)
+	log.Printf("using info = %s", psqlInfo)
 	return sql.Open("postgres", psqlInfo)
 }
 
@@ -63,7 +64,7 @@ func LoginUser(w http.ResponseWriter, r *http.Request) {
 	if id == 0 {
 		// there was no such user, create one!
 		err = db.QueryRow(
-			`INSERT INTO users (name) VALUES ($1) RETURNING id`,
+			`INSERT INTO users (username) VALUES ($1) RETURNING id`,
 			u.Name,
 		).Scan(&id)
 		if err != nil {

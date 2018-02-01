@@ -1,6 +1,4 @@
 (function(){
-
-
   var getUrlParameter = function getUrlParameter(sParam) {
       var sPageURL = decodeURIComponent(window.location.search.substring(1)),
           sURLVariables = sPageURL.split('&'),
@@ -27,7 +25,6 @@
 
   var CURRENT_IMAGE_SRC = ''
 
-  
   var USERS_SERVICE = 'http://127.0.0.1:8101'
   var USER_ID = getUrlParameter('user') || null
 

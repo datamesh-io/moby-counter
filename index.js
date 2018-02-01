@@ -12,7 +12,6 @@ var args = require('minimist')(process.argv, {
 })
 
 var RedisServer = require('./server')
-var PostgresServer = require('./server-postgres')
 
 // if any of these are set - then we use the postgres server
 var postresEnvVars = [

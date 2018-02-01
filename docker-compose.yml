@@ -17,6 +17,7 @@ services:
       - "redis:redis"
     volumes:
       - ./client:/srv/app/client
+
   redis:
     image: redis
     volumes:
@@ -30,9 +31,21 @@ services:
     # together in the users service. divide up the monolith!
     volumes:
      - "moby_counter.uploads:/uploads"
+    depends_on:
+      - users-db
     environment:
      - IMAGE_STORE=/uploads
+     - DB_HOST=users-db
+     - DB_PORT=5432
+     - DB_USER=postgres
+     - DB_NAME=postgres
+     - DB_PASSWORD=secret
+
   users-db:
     image: postgres:9.6.6
     volumes:
      - "moby_counter.users-db:/var/lib/postgresql/data"
+    environment:
+     - POSTGRES_USER=postgres
+     - POSTGRES_DB=postgres
+     - POSTGRES_PASSWORD=secret
