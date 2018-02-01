@@ -22,6 +22,7 @@ services:
     image: redis
     volumes:
      - "app.clicks-db:/data"
+    volume_driver: dm
 
   users:
     build: users/
@@ -41,6 +42,7 @@ services:
      - DB_NAME=postgres
      - DB_PASSWORD=secret
     restart: always
+    volume_driver: dm
 
   users-db:
     image: postgres:9.6.6
@@ -50,3 +52,4 @@ services:
      - POSTGRES_USER=postgres
      - POSTGRES_DB=postgres
      - POSTGRES_PASSWORD=secret
+    volume_driver: dm
