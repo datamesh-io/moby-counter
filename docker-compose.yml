@@ -15,12 +15,17 @@ services:
       - "8100:80"
     links:
       - "redis:redis"
+    volumes:
+      - ./client:/srv/app/client
   redis:
     image: redis
     volumes:
-     - "moby_counter.locations:/data"
+     - "moby_counter.clicks-db:/data"
+
   users:
     build: users/
+    ports:
+      - "8101:8000"
     # TODO: uploads should be stored in a separate uploads service, not bundled
     # together in the users service. divide up the monolith!
     volumes:
