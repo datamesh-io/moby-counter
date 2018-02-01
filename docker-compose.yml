@@ -6,6 +6,19 @@ web:
     - "redis:redis"
 redis:
   image: redis
+
+  # === Dotmesh configuration follows ===
+  #
+  # "dm" means dotmesh.  Specifying a volume_driver tells Docker to use dotmesh
+  # for all Docker volumes for this container.
+
   volume_driver: dm
+
+  # The "<name>:<mountpoint>" syntax asks dotmesh for the dot called <name> and
+  # mounts it into the docker container at <mountpoint>.
+  #
+  # In this case the dot is called "moby_counter", which is the same name as
+  # the app because dots can capture the entire state of your app.
+
   volumes:
    - "moby_counter:/data"
