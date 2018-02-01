@@ -141,13 +141,12 @@ func SetImageForUser(w http.ResponseWriter, r *http.Request) {
 	}
 
 	r.ParseMultipartForm(32 << 20)
-	file, handler, err := r.FormFile("uploadfile")
+	file, _, err := r.FormFile("uploadfile")
 	if err != nil {
 		fmt.Println(err)
 		return
 	}
 	defer file.Close()
-	fmt.Fprintf(w, "%v", handler.Header)
 
 	// TODO sanitise input before using it to write files in the filesystem
 	f, err := os.OpenFile(
@@ -161,7 +160,8 @@ func SetImageForUser(w http.ResponseWriter, r *http.Request) {
 	}
 	defer f.Close()
 	io.Copy(f, file)
-	// TODO redirect user back to referrer?user=id
+
+	http.Redirect(w, r, fmt.Sprintf("http://127.0.0.1:8100/?user=%d", userId), 301)
 }
 
 func getImageFilename(username string) string {
