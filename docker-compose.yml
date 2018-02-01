@@ -1,4 +1,5 @@
 version: '3'
+
 volumes:
   moby_counter.clicks-db:
     driver: dm
@@ -25,8 +26,8 @@ services:
     volumes:
      - "moby_counter.uploads:/uploads"
     environment:
-     - IMAGE_STORE=
+     - IMAGE_STORE=/uploads
   users-db:
-    image: 
+    image: postgres:9.6.6
     volumes:
-     - "moby_counter.users-db:/var"
+     - "moby_counter.users-db:/var/lib/postgresql/data"
