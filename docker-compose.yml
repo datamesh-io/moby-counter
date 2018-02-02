@@ -1,55 +1,44 @@
-version: '3'
+web:
+  build: .
+  ports:
+    - "8100:80"
+  links:
+    - "redis:redis"
+  volumes:
+    - ./client:/srv/app/client
 
-volumes:
-  app.clicks-db:
-    driver: dm
-  app.users-db:
-    driver: dm
-  app.uploads:
-    driver: dm
+redis:
+  image: redis
+  volumes:
+   - "app.clicks-db:/data"
+  volume_driver: dm
 
-services:
-  web:
-    build: .
-    ports:
-      - "8100:80"
-    links:
-      - "redis:redis"
-    volumes:
-      - ./client:/srv/app/client
+users:
+  build: users/
+  ports:
+    - "8101:8000"
+  # TODO: uploads should be stored in a separate uploads service, not bundled
+  # together in the users service. divide up the monolith!
+  volumes:
+   - "app.uploads:/uploads"
+  environment:
+   - IMAGE_STORE=/uploads
+   - DB_HOST=172.17.0.1
+   - DB_PORT=5432
+   - DB_USER=postgres
+   - DB_NAME=postgres
+   - DB_PASSWORD=secret
+  restart: always
+  volume_driver: dm
 
-  redis:
-    image: redis
-    volumes:
-     - "app.clicks-db:/data"
-    volume_driver: dm
-
-  users:
-    build: users/
-    ports:
-      - "8101:8000"
-    # TODO: uploads should be stored in a separate uploads service, not bundled
-    # together in the users service. divide up the monolith!
-    volumes:
-     - "app.uploads:/uploads"
-    depends_on:
-      - users-db
-    environment:
-     - IMAGE_STORE=/uploads
-     - DB_HOST=users-db
-     - DB_PORT=5432
-     - DB_USER=postgres
-     - DB_NAME=postgres
-     - DB_PASSWORD=secret
-    restart: always
-    volume_driver: dm
-
-  users-db:
-    image: postgres:9.6.6
-    volumes:
-     - "app.users-db:/var/lib/postgresql/data"
-    environment:
-     - POSTGRES_USER=postgres
-     - POSTGRES_DB=postgres
-     - POSTGRES_PASSWORD=secret
-    volume_driver: dm
+users-db:
+  image: postgres:9.6.6
+  ports:
+    - "5432:5432"
+  volumes:
+   - "app.users-db:/var/lib/postgresql/data"
+  environment:
+   - POSTGRES_USER=postgres
+   - POSTGRES_DB=postgres
+   - POSTGRES_PASSWORD=secret
+  volume_driver: dm
