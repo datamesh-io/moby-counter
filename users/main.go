@@ -12,6 +12,7 @@ import (
 
 	"github.com/gorilla/mux"
 	_ "github.com/lib/pq"
+	"github.com/rs/cors"
 )
 
 type User struct {
@@ -210,5 +211,6 @@ func main() {
 	//router.HandleFunc("/users", GetUsers).Methods("GET")
 	//router.HandleFunc("/users/{id}", DeleteUser).Methods("DELETE")
 
-	log.Fatal(http.ListenAndServe(":8000", router))
+	handler := cors.Default().Handler(router)
+	log.Fatal(http.ListenAndServe(":8000", handler))
 }
