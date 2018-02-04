@@ -27,9 +27,10 @@ services:
     build: users/
     ports:
       - "8101:8000"
-    # TODO: uploads should be stored in a separate uploads service, not bundled
+    # TODO: uploads should be stored in a separate images service, not bundled
     # together in the users service. divide up the monolith to allow the users
-    # service to scale!
+    # service to scale! also, in the future, the images service should probably
+    # use S3 rather than a plain filesystem.
     volumes:
      - "app.uploads:/uploads"
     depends_on:
