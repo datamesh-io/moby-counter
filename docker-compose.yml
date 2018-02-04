@@ -28,7 +28,8 @@ services:
     ports:
       - "8101:8000"
     # TODO: uploads should be stored in a separate uploads service, not bundled
-    # together in the users service. divide up the monolith!
+    # together in the users service. divide up the monolith to allow the users
+    # service to scale!
     volumes:
      - "app.uploads:/uploads"
     depends_on:
