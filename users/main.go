@@ -149,7 +149,6 @@ func SetImageForUser(w http.ResponseWriter, r *http.Request) {
 	}
 	defer file.Close()
 
-	// TODO sanitise input before using it to write files in the filesystem
 	f, err := os.OpenFile(
 		os.Getenv("IMAGE_STORE")+"/"+getImageFilename(username),
 		os.O_WRONLY|os.O_CREATE,
