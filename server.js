@@ -12,7 +12,7 @@ module.exports = function(opts){
 
   var connectionStatus = false
 
-  var client = redis.createClient(port, host, {})
+  var client = redis.createClient(port, host, {retry_max_delay: 100, connect_timeout: 100})
   client.on('error', function(err){
     connectionStatus = false
     console.log('Error from the redis connection:')
