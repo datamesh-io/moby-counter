@@ -9,32 +9,17 @@ volumes:
     driver: dm
 
 services:
-  
-  router:
-    image: binocarlos/noxy
-    ports:
-      - "8100:80"
-    depends_on:
-      - web
-      - users
-    links:
-      - web:web
-      - users:users
-    environment:
-      NOXY_LOGIN_FRONT: /login
-      NOXY_LOGIN_HOST: users
-      NOXY_LOGIN_PORT: 8000
-      NOXY_USERS_FRONT: /users
-      NOXY_USERS_HOST: users
-      NOXY_USERS_PORT: 8000
-      NOXY_DEFAULT_HOST: web
-
+ 
   web:
     build: .
+    ports:
+      - "8100:80"
     links:
       - "redis:redis"
+      - "users:users"
     volumes:
       - ./client:/srv/app/client
+      - ./server.js:/srv/app/server.js
 
   redis:
     image: redis

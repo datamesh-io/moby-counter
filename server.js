@@ -1,5 +1,6 @@
-var concat = require('concat-stream')
-var Router = require('routes-router')
+var express = require('express');
+var proxy = require('http-proxy-middleware');
+var bodyParser = require('body-parser');
 var ecstatic = require('ecstatic')
 var redis = require('redis')
 
@@ -12,6 +13,9 @@ module.exports = function(opts){
 
   var connectionStatus = false
   var client = null
+
+  var app = express()
+  app.use(bodyParser.json())
 
   function getRedisClient() {
     connectionStatus = false
@@ -43,44 +47,43 @@ module.exports = function(opts){
   console.log('have host: ' + host)
   console.log('have port: ' + port)
 
-  var router = Router()
   var fileServer = ecstatic({ root: __dirname + '/client' })
 
-  router.addRoute("/v1/ping", {
-    GET: function(req, res){
-      if(!connectionStatus || !client) {
-        getRedisClient()
-      }
-      res.setHeader('Content-type', 'application/json')
-      res.end(JSON.stringify({
-        connected:connectionStatus
-      }))
+
+  app.get('/v1/ping', function(req, res){
+    if(!connectionStatus || !client) {
+      getRedisClient()
     }
+    res.setHeader('Content-type', 'application/json')
+    res.end(JSON.stringify({
+      connected:connectionStatus
+    }))
   })
 
-  router.addRoute("/v1/whales", {
-    GET: function (req, res) {
-      
-      client.lrange('whales', 0, -1, function(err, data){
-        res.setHeader('Content-type', 'application/json')
-        res.end(JSON.stringify(data))
+  app.get('/v1/whales', function (req, res) {
+    client.lrange('whales', 0, -1, function(err, data){
+      res.json(data)
+    })
+  })
+
+  app.post('/v1/whales', function (req, res) {
+    console.log('-------------------------------------------');
+    console.log('-------------------------------------------');
+    console.dir(req.body)
+    const data = JSON.stringify(req.body)
+    client.rpush('whales', data, function(){
+      client.save(function(){
+        res.end('ok')  
       })
-    },
-    POST: function (req, res) {
-      req.pipe(concat(function(data){
-        data = data.toString()
-
-        client.rpush('whales', data, function(){
-          client.save(function(){
-            res.end('ok')  
-          })
-        })
-        
-      }))
-    }
+    })
   })
 
-  router.addRoute("/*", fileServer)
 
-  return router
+
+  app.use(proxy('/users', {target: 'http://users:8000', changeOrigin: true}))
+  app.use(proxy('/login', {target: 'http://users:8000', changeOrigin: true}))
+
+  app.use(fileServer)
+
+  return app
 }
