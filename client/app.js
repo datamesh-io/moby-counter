@@ -20,11 +20,9 @@ var dataLoaded = false
 var whaleCount = 0
 var currentData = []
 
-var TEST_SRC = 'https://www.cadburygiftsdirect.co.uk/media/catalog/product/cache/1/image/9df78eab33525d08d6e5fb8d27136e95/m/i/mini-egg-100g-bag_1200x1200.png'
-
 var CURRENT_IMAGE_SRC = ''
 
-var USERS_SERVICE = 'http://127.0.0.1:8101'
+var USERS_SERVICE = ''
 var USER_ID = getUrlParameter('user') || null
 
 function activate_page(){
@@ -143,9 +141,9 @@ function handle_login(e) {
 
     $('#auth').hide()
     $('#imageupload').show()
-    $('#uploadForm').attr('action', 'http://127.0.0.1:8101/users/' + USER_ID + '/image')
+    $('#uploadForm').attr('action', '/users/' + USER_ID + '/image')
 
-    setImageSrc(USERS_SERVICE + '/users/' + USER_ID + '/image')
+    setImageSrc('/users/' + USER_ID + '/image')
     updateAllImages()
   }
 
@@ -172,11 +170,11 @@ $(function(){
   $('#imageupload').hide()
 
   if(USER_ID) {
-    $('#uploadForm').attr('action', 'http://127.0.0.1:8101/users/' + USER_ID + '/image')
+    $('#uploadForm').attr('action', '/users/' + USER_ID + '/image')
   }
   check_status()
   if (USER_ID !== null) {
-    setImageSrc(USERS_SERVICE + '/users/' + USER_ID + '/image')
+    setImageSrc('/users/' + USER_ID + '/image')
     updateAllImages()
   }
 })
