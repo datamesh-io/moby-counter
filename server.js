@@ -11,30 +11,35 @@ module.exports = function(opts){
   var host = opts.redis_host || process.env.USE_REDIS_HOST || 'redis'
 
   var connectionStatus = false
+  var client = null
 
-  var client = redis.createClient(port, host, {
-    socket_keepalive: false,
-    enable_offline_queue: false,
-    retry_strategy: function (options) {
-      // retry connection after 1 second
-      return 1000;
-    }
-  })
-
-  client.on('error', function(err){
+  function getRedisClient() {
     connectionStatus = false
-    console.log('Error from the redis connection:')
-    console.log(err)
-  })
-  client.on('end', function(err){
-    connectionStatus = false
-    console.log('Lost connection to Redis server')
-  })
-  client.on('ready', function(err){
-    connectionStatus = true
-    console.log('Connection made to the Redis server')
-  })
 
+    client = redis.createClient(port, host, {
+      socket_keepalive: true,
+      enable_offline_queue: false,
+      retry_strategy: function (options) {
+        // retry connection after 1 second
+        return 1000;
+      }
+    })
+
+    client.on('error', function(err){
+      connectionStatus = false
+      console.log('Error from the redis connection:')
+      console.log(err)
+    })
+    client.on('end', function(err){
+      connectionStatus = false
+      console.log('Lost connection to Redis server')
+    })
+    client.on('ready', function(err){
+      connectionStatus = true
+      console.log('Connection made to the Redis server')
+    })
+  }
+  
   console.log('-------------------------------------------');
   console.log('have host: ' + host)
   console.log('have port: ' + port)
@@ -44,6 +49,9 @@ module.exports = function(opts){
 
   router.addRoute("/v1/ping", {
     GET: function(req, res){
+      if(!connectionStatus || !client) {
+        getRedisClient()
+      }
       res.setHeader('Content-type', 'application/json')
       res.end(JSON.stringify({
         connected:connectionStatus
@@ -53,7 +61,6 @@ module.exports = function(opts){
 
   router.addRoute("/v1/whales", {
     GET: function (req, res) {
-      
       client.lrange('whales', 0, -1, function(err, data){
         res.setHeader('Content-type', 'application/json')
         res.end(JSON.stringify(data))
