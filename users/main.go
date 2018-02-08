@@ -149,6 +149,13 @@ func SetImageForUser(w http.ResponseWriter, r *http.Request) {
 	}
 	defer file.Close()
 
+	if os.Getenv("DEBUG") != "" {
+		log.Printf(
+			"[SetImageForUser] using image filename %v for user name=%v id=%v",
+			username, userId,
+		)
+	}
+
 	f, err := os.OpenFile(
 		os.Getenv("IMAGE_STORE")+"/"+getImageFilename(username),
 		os.O_WRONLY|os.O_CREATE,

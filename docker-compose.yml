@@ -37,6 +37,7 @@ services:
     depends_on:
       - users-db
     environment:
+     - DEBUG
      - IMAGE_STORE=/uploads
      - DB_HOST=users-db
      - DB_PORT=5432
