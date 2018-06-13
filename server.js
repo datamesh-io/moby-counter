@@ -1,5 +1,6 @@
 var express = require('express');
 var proxy = require('http-proxy-middleware');
+var concat = require('concat-stream')
 var bodyParser = require('body-parser');
 var ecstatic = require('ecstatic')
 var redis = require('redis')
@@ -15,7 +16,7 @@ module.exports = function(opts){
   var client = null
 
   var app = express()
-  app.use(bodyParser.json())
+  //app.use(bodyParser.raw())
 
   function getRedisClient() {
     connectionStatus = false
@@ -67,15 +68,14 @@ module.exports = function(opts){
   })
 
   app.post('/v1/whales', function (req, res) {
-    console.log('-------------------------------------------');
-    console.log('-------------------------------------------');
-    console.dir(req.body)
-    const data = JSON.stringify(req.body)
-    client.rpush('whales', data, function(){
-      client.save(function(){
-        res.end('ok')  
+    req.pipe(concat(function(data){
+      data = data.toString()
+      client.rpush('whales', data, function(){
+        client.save(function(){
+          res.end('ok')  
+        })
       })
-    })
+    }))
   })
 
 
